@@ -1,41 +1,119 @@
 ---
-title: 'Development'
+title: 'Installation'
 description: 'Learn how to preview changes locally'
 ---
 
 <Info>
-  **Prerequisite** You should have installed Node.js (version 18.10.0 or
-  higher).
+  **Prerequisite** Right now we are building the best experience for React developers. More frameworks will be supported down the line.
 </Info>
 
-Step 1. Install Mintlify on your OS:
+Step 1. Generate types and Hyperuser export that can be imported anywhere in your React codebase
 
 <CodeGroup>
 
-```bash npm
-npm i -g mintlify
+```typescript Typescript
+export interface EmbedProps {
+   disabled?: boolean;
+   darkMode?: boolean;
+   userId: string;
+   apiKey: string;
+   user: any;
+}
+type Hyperuser = {
+   initialize(params: EmbedProps): void;
+   track(eventName: string): void;
+   /** * Starts a new deployment with the specified deployment ID. * @param deploymentId - The unique identifier of the deployment. */ startDeployment(
+      deploymentId: string
+   ): void;
+};
+const errorBoundary = (functionToExcecute: Function) => {
+   if (typeof window === "undefined") return;
+   if (!(window as any).hyperuser) {
+      console.warn("[hyperuser]: You tried to initialize hyperuser before the script tag was loaded.");
+      return;
+   }
+   try {
+      functionToExcecute();
+   } catch {
+      console.warn("There was an error excuting a function");
+   }
+};
+class hyperuser implements Hyperuser {
+   initialize(props: EmbedProps) {
+      return errorBoundary((window as any)?.hyperuser?.initialize(props));
+   }
+   startDeployment(deploymentId: string) {
+      return errorBoundary((window as any)?.hyperuser?.startDeployment(deploymentId));
+   }
+   track(eventId: string) {
+      return;
+   }
+}
+export default new hyperuser();
+
+
 ```
 
-```bash yarn
-yarn global add mintlify
+```javascript Javascript
+const errorBoundary = functionToExcecute => {
+  if (typeof window === "undefined") return
+  if (!window.hyperuser) {
+    console.warn(
+      "[hyperuser]: You tried to initialize hyperuser before the script tag was loaded."
+    )
+    return
+  }
+  try {
+    functionToExcecute()
+  } catch {
+    console.warn("There was an error excuting a function")
+  }
+}
+class hyperuser {
+  initialize(props) {
+    return errorBoundary(window?.hyperuser?.initialize(props))
+  }
+  startDeployment(deploymentId) {
+    return errorBoundary(window?.hyperuser?.startDeployment(deploymentId))
+  }
+  track(eventId) {
+    return
+  }
+}
+export default new hyperuser()
+
 ```
 
 </CodeGroup>
 
-Step 2. Go to the docs are located (where you can find `mint.json`) and run the following command:
+Step 2. Add script tag
 
-```bash
-mintlify dev
+```html
+<script type="module" src="https://widget.holyuser.com/holyuser.js"></script>
 ```
 
-The documentation website is now available at `http://localhost:3000`.
+Step 3. Initialize hyperuser client
+
+```javascript
+hyperuser.initialize({
+    darkMode: false,
+    userId: "<any-unique-id>",
+    apiKey: "<your-api-key>",
+    user: {
+        // any information you want to query against
+        firstName: "<user-first-name>",
+        email: "<user-email>"
+    },
+});
+```
+
 
 ### Custom Ports
 
 Mintlify uses port 3000 by default. You can use the `--port` flag to customize the port Mintlify runs on. For example, use this command to run in port 3333:
 
-```bash
-mintlify dev --port 3333
+```html
+<script type="module" src="https://widget.holyuser.com/holyuser.js"></script>
 ```
 
 You will see an error like this if you try to run Mintlify in a port that's already taken:
